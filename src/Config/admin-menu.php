@@ -1,18 +1,14 @@
 <?php
 
 return [
-
-    /**
-     * Blog.
-     */
     [
         'key' => 'blog',
-        'name' => 'Blog',
+        'name' => 'Blogs',
         'route' => 'admin.blog.index',
         'sort' => 3,
         'icon' => 'icon-blog',
     ], [
-        'key'        => 'blog.blogs',
+        'key'        => 'blog.blog',
         'name'       => 'Blogs',
         'route'      => 'admin.blog.index',
         'sort'       => 1,
@@ -36,5 +32,4 @@ return [
         'sort'       => 4,
         'icon'       => '',
     ],
-
 ];
