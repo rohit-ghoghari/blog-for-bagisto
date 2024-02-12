@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
 use Webbycrown\BlogBagisto\Models\Category;
 use Webkul\Core\Eloquent\Repository;
+use Intervention\Image\ImageManager;
+use Illuminate\Support\Str;
 
 class BlogRepository extends Repository
 {
@@ -32,33 +34,13 @@ class BlogRepository extends Repository
     {
         Event::dispatch('admin.blogs.create.before', $data);
 
-        /*$dir = 'blog_images/';
+        $create_data = $data;
 
-        $uploaded = $image = false;
-
-        if (isset($data['src'])) {
-            $image = $first = Arr::first($data['src'], function ($value, $key) {
-                if ($value) {
-                    return $value;
-                } else {
-                    return false;
-                }
-            });
+        if ( array_key_exists('src', $create_data) ) {
+            unset($create_data['src']);
         }
 
-        if ($image != false) {
-            $uploaded = $image->store($dir);
-
-            unset($data['src'], $data['_token']);
-        }
-
-        if ($uploaded) {
-            $data['src'] = $uploaded;
-        } else {
-            unset($data['src']);
-        }*/
-
-        $blog = $this->create($data);
+        $blog = $this->create($create_data);
 
         $this->uploadImages($data, $blog);
 
@@ -78,33 +60,13 @@ class BlogRepository extends Repository
     {
         Event::dispatch('admin.blogs.update.before', $id);
 
-        /*$dir = 'blog_images/';
+        $update_data = $data;
 
-        $uploaded = $image = false;
-
-        if (isset($data['src'])) {
-            $image = $first = Arr::first($data['src'], function ($value, $key) {
-                return $value ? $value : false;
-            });
+        if ( array_key_exists('src', $update_data) ) {
+            unset($update_data['src']);
         }
 
-        if ($image != false) {
-            $uploaded = $image->store($dir);
-
-            unset($data['src'], $data['_token']);
-        }
-
-        if ($uploaded) {
-            $blogItem = $this->find($id);
-
-            Storage::delete($blogItem->src);
-
-            $data['src'] = $uploaded;
-        } else {
-            unset($data['src']);
-        }*/
-
-        $blog = $this->update($data, $id);
+        $blog = $this->update($update_data, $id);
 
         $this->uploadImages($data, $blog);
 
@@ -121,7 +83,7 @@ class BlogRepository extends Repository
      * @param  string  $type
      * @return void
      */
-    public function uploadImages($data, $blog, $type = 'image')
+    public function uploadImages($data, $blog, $type = 'src')
     {
         if (isset($data[$type])) {
             foreach ($data[$type] as $imageId => $image) {

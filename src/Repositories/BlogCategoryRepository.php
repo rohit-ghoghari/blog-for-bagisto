@@ -32,33 +32,13 @@ class BlogCategoryRepository extends Repository
     {
         Event::dispatch('admin.blog.categories.create.before', $data);
 
-        /*$dir = 'category_images/';
+        $create_data = $data;
 
-        $uploaded = $image = false;
-
-        if (isset($data['image'])) {
-            $image = $first = Arr::first($data['image'], function ($value, $key) {
-                if ($value) {
-                    return $value;
-                } else {
-                    return false;
-                }
-            });
+        if ( array_key_exists('image', $create_data) ) {
+            unset($create_data['image']);
         }
 
-        if ($image != false) {
-            $uploaded = $image->store($dir);
-
-            unset($data['image'], $data['_token']);
-        }
-
-        if ($uploaded) {
-            $data['image'] = $uploaded;
-        } else {
-            unset($data['image']);
-        }*/
-
-        $categories = $this->create($data);
+        $categories = $this->create($create_data);
 
         $this->uploadImages($data, $categories);
 
@@ -78,33 +58,13 @@ class BlogCategoryRepository extends Repository
     {
         Event::dispatch('admin.blog.categories.update.before', $id);
 
-        /*$dir = 'category_images/';
+        $update_data = $data;
 
-        $uploaded = $image = false;
-
-        if (isset($data['image'])) {
-            $image = $first = Arr::first($data['image'], function ($value, $key) {
-                return $value ? $value : false;
-            });
+        if ( array_key_exists('image', $update_data) ) {
+            unset($update_data['image']);
         }
 
-        if ($image != false) {
-            $uploaded = $image->store($dir);
-
-            unset($data['image'], $data['_token']);
-        }
-
-        if ($uploaded) {
-            $categoryItem = $this->find($id);
-
-            Storage::delete($categoryItem->image);
-
-            $data['image'] = $uploaded;
-        } else {
-            unset($data['image']);
-        }*/
-
-        $categories = $this->update($data, $id);
+        $categories = $this->update($update_data, $id);
 
         $this->uploadImages($data, $categories);
 

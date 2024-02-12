@@ -9,6 +9,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Webbycrown\BlogBagisto\Datagrids\BlogDataGrid;
 use Webbycrown\BlogBagisto\Models\Category;
 use Webbycrown\BlogBagisto\Models\Tag;
+use Webbycrown\BlogBagisto\Models\Blog;
 use Webbycrown\BlogBagisto\Repositories\BlogRepository;
 use Webkul\User\Models\Admin;
 use Webbycrown\BlogBagisto\Http\Requests\BlogRequest;
@@ -50,6 +51,11 @@ class BlogController extends Controller
         return view($this->_config['view']);
     }
 
+    public function gteBlogs()
+    {
+        return 'This is blog API';
+    }
+
     /**
      * Show the form for creating a new resource.
      *
@@ -61,11 +67,13 @@ class BlogController extends Controller
 
         $categories = Category::all();
 
+        $additional_categories = Category::whereNull('parent_id')->where('status', 1)->get();
+
         $tags = Tag::all();
 
         $users = Admin::all();
 
-        return view($this->_config['view'], compact('categories', 'tags', 'users'))->with('locale', $locale);
+        return view($this->_config['view'], compact('categories', 'tags', 'users', 'additional_categories'))->with('locale', $locale);
     }
 
     /**
@@ -75,22 +83,25 @@ class BlogController extends Controller
      */
     public function store(BlogRequest $blogRequest)
     {
-        /*$this->validate(request(), [
-            'slug'                  => 'slug', 'unique',
-            'name'                  => 'required',
-            'channels'              => 'required',
-            'image.*'               => 'required|mimes:bmp,jpeg,jpg,png,webp',
-            'default_category'      => 'required',
-        ]);*/
 
         $data = request()->all();
 
-        if (is_array($data['locale'])) {
+        if (array_key_exists('locale', $data) &&  is_array($data['locale'])) {
             $data['locale'] = implode(',', $data['locale']);
         }
 
-        if (is_array($data['tags'])) {
+        if (array_key_exists('tags', $data) &&  is_array($data['tags'])) {
             $data['tags'] = implode(',', $data['tags']);
+        }
+
+        if (array_key_exists('categorys', $data) && is_array($data['categorys'])) {
+            $data['categorys'] = implode(',', $data['categorys']);
+        }
+
+        $data['author'] = '';
+        if (is_array($data) && array_key_exists('author_id', $data) && isset($data['author_id']) && (int)$data['author_id'] > 0) {
+            $author_data = Admin::where('id', $data['author_id'])->first();
+            $data['author'] = ( $author_data && !empty($author_data) ) ? $author_data->name : '';
         }
 
         $result = $this->blogRepository->save($data);
@@ -112,15 +123,25 @@ class BlogController extends Controller
      */
     public function edit($id)
     {
+        $loggedIn_user = auth()->guard('admin')->user()->toarray();
+        $user_id = ( array_key_exists('id', $loggedIn_user) ) ? $loggedIn_user['id'] : 0;
+        $role = ( array_key_exists('role', $loggedIn_user) ) ? ( array_key_exists('name', $loggedIn_user['role']) ? $loggedIn_user['role']['name'] : 'Administrator' ) : 'Administrator';
+
         $blog = $this->blogRepository->findOrFail($id);
 
+        if ( $blog && $user_id != $blog->author_id && $role != 'Administrator' ) {
+            return redirect()->route('admin.blog.index');
+        }
+
         $categories = Category::all();
+
+        $additional_categories = Category::whereNull('parent_id')->where('status', 1)->get();
 
         $tags = Tag::all();
 
         $users = Admin::all();
 
-        return view($this->_config['view'], compact('blog', 'categories', 'tags', 'users'));
+        return view($this->_config['view'], compact('blog', 'categories', 'tags', 'users', 'additional_categories'));
     }
 
     /**
@@ -131,28 +152,25 @@ class BlogController extends Controller
      */
     public function update(BlogRequest $blogRequest, $id)
     {
-        /*$this->validate(request(), [
-            'slug'                  => 'slug', 'unique',
-            'name'                  => 'required',
-            'channels'              => 'required',
-            'image'                 => 'required',
-            'default_category'      => 'required',
-        ]);*/
 
         $data = request()->all();
 
-        if (is_array($data['locale'])) {
+        if (array_key_exists('locale', $data) && is_array($data['locale'])) {
             $data['locale'] = implode(',', $data['locale']);
         }
         
-        if (is_array($data['tags'])) {
+        if (array_key_exists('tags', $data) && is_array($data['tags'])) {
             $data['tags'] = implode(',', $data['tags']);
         }
+        
+        if (array_key_exists('categorys', $data) && is_array($data['categorys'])) {
+            $data['categorys'] = implode(',', $data['categorys']);
+        }
 
-        if (is_null(request()->image)) {
-            session()->flash('error', trans('blog::app.blog.updated-fault'));
-
-            return redirect()->back();
+        $data['author'] = '';
+        if (is_array($data) && array_key_exists('author_id', $data) && isset($data['author_id']) && (int)$data['author_id'] > 0) {
+            $author_data = Admin::where('id', $data['author_id'])->first();
+            $data['author'] = ( $author_data && !empty($author_data) ) ? $author_data->name : '';
         }
 
         $result = $this->blogRepository->updateItem($data, $id);

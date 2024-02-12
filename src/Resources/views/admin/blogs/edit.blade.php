@@ -3,6 +3,18 @@
         @lang('blog::app.blog.edit-title')
     </x-slot:title>
 
+    @pushOnce('styles')
+
+        <style type="text/css">
+            
+            .v-tree-container>.v-tree-item:not(.has-children) {
+                padding-left: 18px !important;
+            }
+            
+        </style>
+
+    @endPushOnce
+
     @php
         $currentLocale = core()->getRequestedLocale();
     @endphp
@@ -40,48 +52,11 @@
             </div>
         </div>
 
-        <!-- Filter Row -->
-        <div class="flex  gap-4 justify-between items-center mt-7 max-md:flex-wrap">
-            <div class="flex gap-x-1 items-center">
-                <!-- Locale Switcher -->
-
-                <x-admin::dropdown :class="core()->getAllLocales()->count() <= 1 ? 'hidden' : ''">
-                    <!-- Dropdown Toggler -->
-                    <x-slot:toggle>
-                        <button
-                            type="button"
-                            class="transparent-button px-1 py-1.5 hover:bg-gray-200 dark:hover:bg-gray-800 focus:bg-gray-200 dark:focus:bg-gray-800 dark:text-white"
-                        >
-                            <span class="icon-language text-2xl"></span>
-
-                            {{ $currentLocale->name }}
-
-                            <input type="hidden" name="locale" value="{{ $currentLocale->code }}"/>
-
-                            <span class="icon-sort-down text-2xl"></span>
-                        </button>
-                    </x-slot:toggle>
-
-                    <!-- Dropdown Content -->
-                    <x-slot:content class="!p-0">
-                        @foreach (core()->getAllLocales() as $locale)
-                            <a
-                                href="?{{ Arr::query(['locale' => $locale->code]) }}"
-                                class="flex gap-2.5 px-5 py-2 text-base cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-950 dark:text-white {{ $locale->code == $currentLocale->code ? 'bg-gray-100 dark:bg-gray-950' : ''}}"
-                            >
-                                {{ $locale->name }}
-                            </a>
-                        @endforeach
-                    </x-slot:content>
-                </x-admin::dropdown>
-            </div>
-        </div>
-
         <!-- Full Pannel -->
-        <div class="flex gap-2.5 mt-3.5 max-xl:flex-wrap">
+        <div class="flex gap-[10px] mt-[14px] max-xl:flex-wrap">
 
             <!-- Left Section -->
-            <div class="flex flex-col gap-2 flex-1 max-xl:flex-auto">
+            <div class="flex flex-col gap-[8px] flex-1 max-xl:flex-auto">
 
                 <!-- General -->
                 <div class="p-4 bg-white dark:bg-gray-900 rounded box-shadow">
@@ -232,10 +207,6 @@
                                 @lang('blog::app.blog.image')
                             </p>
 
-                            <p class="text-xs text-gray-500">
-                                @lang('admin::app.catalog.categories.create.logo-size')
-                            </p>
-
                             <x-admin::media.images 
                                 name="src" 
                                 :uploaded-images="$blog->src ? [['id' => 'src', 'url' => $blog->src_url]] : []"
@@ -255,7 +226,8 @@
                     </p>
 
                     <!-- SEO Title & Description Blade Componnet -->
-                    <x-admin::seo/>
+                    {{-- <x-admin::seo/> --}}
+                    <v-seo-helper-custom></v-seo-helper-custom>
 
                     <div class="mt-8">
                         <!-- Meta Title -->
@@ -325,12 +297,12 @@
             </div>
 
             <!-- Right Section -->
-            <div class="flex flex-col gap-2 w-[360px] max-w-full">
+            <div class="flex flex-col gap-[8px] w-[360px] max-w-full">
                 <!-- Settings -->
 
                 <x-admin::accordion>
                     <x-slot:header>
-                        <p class="p-2.5 text-gray-600 dark:text-gray-300 text-base font-semibold">
+                        <p class="p-[10px] text-gray-600 dark:text-gray-300 text-[16px] font-semibold">
                             @lang('admin::app.catalog.categories.create.settings')
                         </p>
                     </x-slot:header>
@@ -361,6 +333,7 @@
                         </x-admin::form.control-group>
 
                         <!-- Status -->
+                        <input type="hidden" name="status" id="status" value="@php echo $blog->status @endphp">
                         <x-admin::form.control-group>
                             <x-admin::form.control-group.label class="text-gray-800 dark:text-white font-medium">
                                 @lang('blog::app.blog.status')
@@ -370,7 +343,8 @@
 
                             <x-admin::form.control-group.control
                                 type="switch"
-                                name="status"
+                                name="status_switch"
+                                id="status_switch"
                                 class="cursor-pointer"
                                 value="1"
                                 :label="trans('blog::app.blog.status')"
@@ -380,6 +354,7 @@
                         </x-admin::form.control-group>
 
                         <!-- Allow Comments -->
+                        <input type="hidden" name="allow_comments" id="allow_comments" value="@php echo $blog->allow_comments @endphp">
                         <x-admin::form.control-group>
                             <x-admin::form.control-group.label class="text-gray-800 dark:text-white font-medium">
                                 @lang('blog::app.blog.allow_comments')
@@ -389,7 +364,7 @@
 
                             <x-admin::form.control-group.control
                                 type="switch"
-                                name="allow_comments"
+                                name="allow_comments_switch"
                                 class="cursor-pointer"
                                 value="1"
                                 :label="trans('blog::app.blog.allow_comments')"
@@ -399,42 +374,66 @@
                         </x-admin::form.control-group>
 
                         <!-- Auther -->
+                        @php
+
+                        $loggedIn_user = auth()->guard('admin')->user()->toarray();
+                        $user_id = ( array_key_exists('id', $loggedIn_user) ) ? $loggedIn_user['id'] : 0;
+                        $user_name = ( array_key_exists('name', $loggedIn_user) ) ? $loggedIn_user['name'] : '';
+                        $role = ( array_key_exists('role', $loggedIn_user) ) ? ( array_key_exists('name', $loggedIn_user['role']) ? $loggedIn_user['role']['name'] : 'Administrator' ) : 'Administrator';
+
+                        @endphp
+
                         <x-admin::form.control-group class="mb-2.5">
                             <x-admin::form.control-group.label class="required text-gray-800 dark:text-white font-medium required">
                                 @lang('blog::app.blog.author')
                             </x-admin::form.control-group.label>
 
-                            <x-admin::form.control-group.control
-                                type="select"
-                                name="author"
-                                id="author"
-                                {{-- class="cursor-pointer" --}}
-                                rules="required"
-                                :value="old('author') ?? $blog->author"
-                                :label="trans('blog::app.blog.author')"
-                                {{-- :placeholder="trans('blog::app.blog.author')" --}}
-                            >
-                                <!-- Options -->
-                                <option value="">Select an author</option>
-                                @foreach($users as $user)
-                                    <option value="{{$user->name}}">{{$user->name}}</option>
-                                @endforeach
-                            </x-admin::form.control-group.control>
+                            @if( $role != 'Administrator' )
+                                <input type="hidden" name="author_id" id="author_id" value="{{$user_id}}">
+                                <x-admin::form.control-group.control
+                                    type="text"
+                                    name="author"
+                                    rules="required"
+                                    disabled="disabled"
+                                    :value="$user_name"
+                                    :label="trans('blog::app.blog.author')"
+                                    :placeholder="trans('blog::app.blog.author')"
+                                >
+                                </x-admin::form.control-group.control>
+                            @else
+                                <x-admin::form.control-group.control
+                                    type="select"
+                                    name="author_id"
+                                    id="author_id"
+                                    {{-- class="cursor-pointer" --}}
+                                    rules="required"
+                                    :value="old('author_id') ?? $blog->author_id"
+                                    :label="trans('blog::app.blog.author')"
+                                    {{-- :placeholder="trans('blog::app.blog.author')" --}}
+                                >
+                                    <!-- Options -->
+                                    <option value="">Select an author</option>
+                                    @foreach($users as $user)
+                                        <option value="{{$user->id}}">{{$user->name}}</option>
+                                    @endforeach
+                                </x-admin::form.control-group.control>
 
-                            <x-admin::form.control-group.error
-                                control-name="author"
-                            >
-                            </x-admin::form.control-group.error>
+                                <x-admin::form.control-group.error
+                                    control-name="author"
+                                >
+                                </x-admin::form.control-group.error>
+                            @endif
                         </x-admin::form.control-group>
 
                     </x-slot:content>
                 </x-admin::accordion>
 
-                <!-- Categories & Tags -->
+                <!-- Default Categories -->
                 <x-admin::accordion>
                     <x-slot:header>
-                        <p class="required text-gray-600 dark:text-gray-300 text-base p-2.5 font-semibold">
-                            @lang('blog::app.blog.categories_title')
+                        <p class="required p-[10px] text-gray-600 dark:text-gray-300 text-[16px] font-semibold">
+                            {{-- @lang('blog::app.blog.categories_title') --}}
+                            Default Category
                         </p>
                     </x-slot:header>
 
@@ -455,7 +454,7 @@
                                 <!-- Options -->
                                 <option value="">Select an category</option>
                                 @foreach($categories as $category)
-                                    <option value="{{$category->id}}" {{ $blog->default_category == $category->id ? 'selected' : '' }} >{{$category->name}}</option>
+                                    <option value="{{$category->id}}" data-slug="{{$category->slug}}" id="{{'default_category'.$category->id}}" {{ $blog->default_category == $category->id ? 'selected' : '' }} >{{$category->name}}</option>
                                 @endforeach
                             </x-admin::form.control-group.control>
 
@@ -468,10 +467,39 @@
                     </x-slot:content>
                 </x-admin::accordion>
 
+                <!-- Additional Category -->
+                <x-admin::accordion>
+                    <x-slot:header>
+                        <p class="p-[10px] text-gray-600 dark:text-gray-300 text-[16px] font-semibold">
+                            {{-- @lang('blog::app.blog.categories_title') --}}
+                            Additional Category
+                        </p>
+                    </x-slot:header>
+
+                    <x-slot:content>
+
+                        <!-- Status -->
+                        <div class="flex flex-col gap-[12px]">
+                            <x-admin::tree.view
+                                input-type="checkbox"
+                                name-field="categorys"
+                                id-field="id"
+                                value-field="id"
+                                :items="json_encode($additional_categories)"
+                                :value="json_encode(explode(',', $blog->categorys))"
+                                behavior="no"
+                                :fallback-locale="config('app.fallback_locale')"
+                            >
+                            </x-admin::tree.view>
+                        </div>
+
+                    </x-slot:content>
+                </x-admin::accordion>
+
                 <!-- Tags -->
                 <x-admin::accordion>
                     <x-slot:header>
-                        <p class="required text-gray-600 dark:text-gray-300 text-base p-2.5 font-semibold">
+                        <p class="required p-[10px] text-gray-600 dark:text-gray-300 text-[16px] font-semibold">
                             @lang('blog::app.blog.tag_title')
                         </p>
                     </x-slot:header>
@@ -513,5 +541,115 @@
         </div>
 
     </x-admin::form>
+
+@pushOnce('scripts')
+    {{-- SEO Vue Component Template --}}
+    <script type="text/x-template" id="v-seo-helper-custom-template">
+        <div class="flex flex-col gap-[3px] mb-[30px]">
+            <p 
+                class="text-[#161B9D] dark:text-white"
+                v-text="metaTitle"
+            >
+            </p>
+
+            <p 
+                class="text-[#161B9D] dark:text-white"
+                style="display: none;"
+                v-text="metaSlug"
+            >
+            </p>
+
+            <p 
+                class="text-[#161B9D] dark:text-white"
+                style="display: none;"
+                v-text="metaSlugCategory"
+            >
+            </p>
+
+            <!-- SEO Meta Title -->
+            <p 
+                class="text-[#135F29]"
+                v-text="'{{ URL::to('/') }}/blog' + ( ( metaSlugCategory != '' && metaSlugCategory != null && metaSlugCategory != undefined ) ? '/'+metaSlugCategory : '' ) + '/' + (metaSlug ? metaSlug.toLowerCase().replace(/\s+/g, '-') : '')"
+            >
+            </p>
+
+            <!-- SEP Meta Description -->
+            <p 
+                class="text-gray-600 dark:text-gray-300"
+                v-text="metaDescription"
+            >
+            </p>
+        </div>
+    </script>
+
+    <script type="module">
+        app.component('v-seo-helper-custom', {
+            template: '#v-seo-helper-custom-template',
+
+            data() {
+                return {
+                    metaTitle: this.$parent.getValues()['meta_title'],
+
+                    metaDescription: this.$parent.getValues()['meta_description'],
+
+                    metaSlug: this.$parent.getValues()['slug'],
+
+                    metaSlugCategory: this.$parent.getValues()['default_category'],
+                }
+            },
+
+            mounted() {
+                let self = this;
+
+                self.metaTitle = document.getElementById('meta_title').value;
+
+                self.metaDescription = document.getElementById('meta_description').value;
+
+                self.metaSlug = document.getElementById('slug').value;
+
+                var d_cat_id = document.getElementById('default_category').value;
+
+                var d_cat_slug = document.getElementById('default_category' + d_cat_id).getAttribute("data-slug");
+
+                self.metaSlugCategory = ( d_cat_slug != '' && d_cat_slug != null && d_cat_slug != undefined ) ? d_cat_slug : '';
+
+                document.getElementById('meta_title').addEventListener('input', function(e) {
+                    self.metaTitle = e.target.value;
+                });
+
+                document.getElementById('meta_description').addEventListener('input', function(e) {
+                    self.metaDescription = e.target.value;
+                });
+
+                document.getElementById('name').addEventListener('input', function(e) {
+                    setTimeout(function(){
+                        var slug = document.getElementById('slug').value;
+                        self.metaSlug = ( slug != '' && slug != null && slug != undefined ) ? slug : '';
+                    }, 1000);
+                });
+
+                document.getElementById('slug').addEventListener('input', function(e) {
+                    var slug = e.target.value;
+                    self.metaSlug = ( slug != '' && slug != null && slug != undefined ) ? slug : '';
+                });
+
+                document.getElementById('default_category').addEventListener('change', function(e) {
+                    var cat_slug = document.getElementById('default_category' + e.target.value).getAttribute("data-slug");
+                    self.metaSlugCategory = ( cat_slug != '' && cat_slug != null && cat_slug != undefined ) ? cat_slug : '';
+                });
+
+                document.getElementById('status_switch').addEventListener('change', function(e) {
+                    document.getElementById('status').value = ( e.target.checked == true || e.target.checked == 'true' ) ? 1 : 0;
+                });
+
+                document.getElementById('allow_comments_switch').addEventListener('change', function(e) {
+                    document.getElementById('allow_comments').value = ( e.target.checked == true || e.target.checked == 'true' ) ? 1 : 0;
+                });
+
+            },
+        });
+    </script>
+
+@endPushOnce
 
 </x-admin::layouts>

@@ -108,3 +108,12 @@ Route::group(['middleware' => ['web', 'admin'], 'prefix' => config('app.admin_ur
 
     Route::post('blog/comment/massdelete', [CommentController::class, 'massDestroy'])->name('admin.blog.comment.massdelete');
 });
+
+/**
+ * Admin blog API routes
+ */
+Route::group(['middleware' => ['web', 'admin'], 'prefix' => 'api/v1/admin'], function () {
+
+    Route::get('blogs', [BlogController::class, 'gteBlogs'])->name('admin.blog.gteBlogs');
+
+});

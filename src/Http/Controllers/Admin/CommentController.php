@@ -9,6 +9,10 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Webbycrown\BlogBagisto\Datagrids\CommentDataGrid;
 use Webbycrown\BlogBagisto\Repositories\BlogCommentRepository;
 use Webkul\User\Models\Admin;
+use Webbycrown\BlogBagisto\Models\Category;
+use Webbycrown\BlogBagisto\Models\Tag;
+use Webbycrown\BlogBagisto\Models\Blog;
+use Webbycrown\BlogBagisto\Models\Comment;
 
 class CommentController extends Controller
 {
@@ -76,6 +80,18 @@ class CommentController extends Controller
     public function edit($id)
     {
         $comment = $this->blogCommentRepository->findOrFail($id);
+
+        $loggedIn_user = auth()->guard('admin')->user()->toarray();
+        $user_id = ( array_key_exists('id', $loggedIn_user) ) ? $loggedIn_user['id'] : 0;
+        $role = ( array_key_exists('role', $loggedIn_user) ) ? ( array_key_exists('name', $loggedIn_user['role']) ? $loggedIn_user['role']['name'] : 'Administrator' ) : 'Administrator';
+        if ( $role != 'Administrator' ) {
+            $blogs = Blog::where('author_id', $user_id)->get();
+            $post_ids = ( !empty($blogs) && count($blogs) > 0 ) ? $blogs->pluck('id')->toarray() : array();
+            $check_comment = Comment::where('id', $id)->whereIn('post', $post_ids)->first();
+            if (!$check_comment) {
+                return redirect()->route('admin.blog.comment.index');
+            }
+        }
 
         $author_name = '';
         $author_id = $comment && isset($comment->author) ? $comment->author : 0;

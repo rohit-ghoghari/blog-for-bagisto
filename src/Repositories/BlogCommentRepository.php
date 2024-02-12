@@ -25,7 +25,13 @@ class BlogCommentRepository extends Repository
      */
     public function save(array $data)
     {
-        //
+        Event::dispatch('admin.blog.comments.create.before', $data);
+
+        $comment = $this->create($data);
+
+        Event::dispatch('admin.blog.comments.create.after', $comment);
+
+        return true;
     }
 
     /**

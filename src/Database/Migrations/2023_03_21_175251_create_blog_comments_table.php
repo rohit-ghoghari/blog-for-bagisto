@@ -17,8 +17,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('author');
             $table->foreignId('post');
+            $table->string('name');
             $table->string('email');
             $table->string('comment');
+            $table->integer('parent_id')->defualt(0);
             $table->boolean('status');
             $table->timestamps();
             $table->softDeletes();

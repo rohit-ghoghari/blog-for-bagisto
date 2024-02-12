@@ -5,6 +5,8 @@ namespace Webbycrown\BlogBagisto\Datagrids;
 use Illuminate\Support\Facades\DB;
 use Webkul\Core\Models\Channel;
 use Webkul\DataGrid\DataGrid;
+use Webbycrown\BlogBagisto\Models\Category;
+use Webbycrown\BlogBagisto\Models\Tag;
 
 class CategoryDataGrid extends DataGrid
 {
@@ -46,38 +48,13 @@ class CategoryDataGrid extends DataGrid
         'locales',
     ];
 
-    /**
-     * Create datagrid instance.
-     *
-     * @return void
-     */
-    // public function __construct()
-    // {
-    //     parent::__construct();
-
-    //     /* locale */
-    //     $this->locale = core()->getRequestedLocaleCode();
-
-    //     /* channel */
-    //     $this->channel = core()->getRequestedChannelCode();
-
-    //     /* finding channel code */
-    //     if ($this->channel !== 'all') {
-    //         $this->channel = Channel::where('code', $this->channel)->first();
-
-    //         $this->channel = $this->channel ? $this->channel->code : 'all';
-    //     }
-    // }
-
     public function prepareQueryBuilder()
     {
         $queryBuilder = DB::table('blog_categories')
             ->select('id')
-            ->addSelect('id', 'name', 'slug', 'status', 'description', 'meta_title', 'meta_description', 'meta_keywords');
+            ->addSelect('id', 'name', 'slug', 'status', 'description', 'meta_title', 'meta_description', 'meta_keywords', 'parent_id');
 
         return $queryBuilder;
-        
-        // $this->setQueryBuilder($queryBuilder);
     }
 
     public function prepareColumns()
@@ -101,6 +78,20 @@ class CategoryDataGrid extends DataGrid
         ]);
 
         $this->addColumn([
+            'index'      => 'parent_id',
+            'label'      => 'Parent',
+            'type'       => 'string',
+            'searchable' => true,
+            'sortable'   => true,
+            'filterable' => true,
+            'closure'    => function ($value) {
+                $parent_data = Category::where('id', (int)$value->parent_id)->first();
+                $parent_category_name = ( $parent_data && isset($parent_data->name) && !empty($parent_data->name) && !is_null($parent_data->name) ) ? $parent_data->name : '-';
+                return $parent_category_name;
+            },
+        ]);
+
+        $this->addColumn([
             'index'      => 'status',
             'label'      => trans('blog::app.datagrid.status'),
             'type'       => 'boolean',
@@ -119,36 +110,42 @@ class CategoryDataGrid extends DataGrid
 
     public function prepareActions()
     {
-        $this->addAction([
-            'title' => 'edit',
-            'method' => 'GET',
-            'route' => 'admin.blog.category.edit',
-            'icon' => 'icon-edit',
-            'url'    => function ($row) {
-                return route('admin.blog.category.edit', $row->id);
-            },
-        ]);
+        if (bouncer()->hasPermission('blog.category.edit')) {
+            $this->addAction([
+                'title' => 'edit',
+                'method' => 'GET',
+                'route' => 'admin.blog.category.edit',
+                'icon' => 'icon-edit',
+                'url'    => function ($row) {
+                    return route('admin.blog.category.edit', $row->id);
+                },
+            ]);
+        }
 
-        $this->addAction([
-            'title' => 'delete',
-            'method' => 'POST',
-            'route' => 'admin.blog.category.delete',
-            'icon' => 'icon-delete',
-            'url'    => function ($row) {
-                return route('admin.blog.category.delete', $row->id);
-            },
-        ]);
+        if (bouncer()->hasPermission('blog.category.delete')) {
+            $this->addAction([
+                'title' => 'delete',
+                'method' => 'POST',
+                'route' => 'admin.blog.category.delete',
+                'icon' => 'icon-delete',
+                'url'    => function ($row) {
+                    return route('admin.blog.category.delete', $row->id);
+                },
+            ]);
+        }
     }
 
     public function prepareMassActions()
     {
-        $this->addMassAction([
-            'type'   => 'delete',
-            'label'  => trans('admin::app.datagrid.delete'),
-            'title'  => 'Delete',
-            'action' => route('admin.blog.category.massdelete'),
-            'url' => route('admin.blog.category.massdelete'),
-            'method' => 'POST',
-        ]);
+        if (bouncer()->hasPermission('blog.category.delete')) {
+            $this->addMassAction([
+                'type'   => 'delete',
+                'label'  => trans('admin::app.datagrid.delete'),
+                'title'  => 'Delete',
+                'action' => route('admin.blog.category.massdelete'),
+                'url' => route('admin.blog.category.massdelete'),
+                'method' => 'POST',
+            ]);
+        }
     }
 }

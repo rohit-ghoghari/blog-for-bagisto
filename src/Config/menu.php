@@ -10,7 +10,8 @@ return [
         'name' => 'Blog',
         'route' => 'admin.blog.index',
         'sort' => 3,
-        'icon' => 'icon-blog',
+        // 'icon' => 'icon-blog',
+        'icon' => 'icon-attribute',
     ], [
         'key'        => 'blog.blogs',
         'name'       => 'Blogs',

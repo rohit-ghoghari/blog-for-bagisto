@@ -35,8 +35,8 @@ class BlogRequest extends FormRequest
                 'short_description' => 'required',
                 'description'       => 'required',
                 'default_category'  => 'required',
-                'tags.*'              => 'required',
-                'author'            => 'required',
+                'tags.*'            => 'required',
+                'author_id'         => 'required',
                 'meta_title'        => 'required',
                 'meta_description'  => 'required',
                 'meta_keywords'     => 'required',
@@ -54,8 +54,8 @@ class BlogRequest extends FormRequest
             'meta_description'  => 'required',
             'meta_keywords'     => 'required',
             'default_category'  => 'required',
-            'tags.*'              => 'required',
-            'author'            => 'required',
+            'tags.*'            => 'required',
+            'author_id'         => 'required',
             'published_at'      => 'required',
         ];
     }

@@ -28,6 +28,10 @@ class BlogServiceProvider extends ServiceProvider
             __DIR__ . '/../../publishable/assets' => public_path('themes/default/assets'),
         ], 'public');
 
+        $this->publishes([
+            __DIR__.'/../Config/l5-swagger.php' => config_path('l5-swagger.php'),
+        ], ['webbycrown-blog-api-swagger']);
+
         $this->loadViewsFrom(__DIR__ . '/../Resources/views', 'blog');
 
     }
@@ -49,6 +53,10 @@ class BlogServiceProvider extends ServiceProvider
      */
     protected function registerConfig()
     {
+
+        // $this->mergeConfigFrom(
+        //     dirname(__DIR__) . '/Config/l5-swagger.php', 'bagisto-rest-api-swagger'
+        // );
 
         $this->mergeConfigFrom(
             dirname(__DIR__) . '/Config/menu.php', 'menu.admin'

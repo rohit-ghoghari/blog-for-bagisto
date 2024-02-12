@@ -7,6 +7,7 @@ use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Webbycrown\BlogBagisto\Models\Blog;
 use Webbycrown\BlogBagisto\Models\Category;
+use Webkul\Shop\Repositories\ThemeCustomizationRepository;
 
 class ArticleController extends Controller
 {
@@ -20,11 +21,16 @@ class ArticleController extends Controller
     protected $_config;
 
     /**
+     * Using const variable for status
+     */
+    const STATUS = 1;
+
+    /**
      * Create a new controller instance.
      *
      * @return void
      */
-    public function __construct()
+    public function __construct(protected ThemeCustomizationRepository $themeCustomizationRepository)
     {
         $this->_config = request('_config');
     }
@@ -40,7 +46,12 @@ class ArticleController extends Controller
 
         $categories = Blog::groupBy('default_category')->selectRaw('default_category')->selectRaw('count(*) as count')->get();
 
-        return view($this->_config['view'], compact('blogs', 'categories'));
+        $customizations = $this->themeCustomizationRepository->orderBy('sort_order')->findWhere([
+            'status'     => self::STATUS,
+            'channel_id' => core()->getCurrentChannel()->id
+        ]);
+
+        return view($this->_config['view'], compact('blogs', 'categories', 'customizations'));
     }
 
     /**

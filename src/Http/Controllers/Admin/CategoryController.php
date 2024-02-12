@@ -6,9 +6,14 @@ use Illuminate\Routing\Controller;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\Session;
 use Webbycrown\BlogBagisto\Datagrids\CategoryDataGrid;
 use Webbycrown\BlogBagisto\Repositories\BlogCategoryRepository;
 use Webbycrown\BlogBagisto\Http\Requests\BlogCategoryRequest;
+use Webbycrown\BlogBagisto\Models\Blog;
+use Webbycrown\BlogBagisto\Models\Category;
+use Webbycrown\BlogBagisto\Models\Tag;
+use Webbycrown\BlogBagisto\Models\Comment;
 
 class CategoryController extends Controller
 {
@@ -56,7 +61,9 @@ class CategoryController extends Controller
     {
         $locale = core()->getRequestedLocaleCode();
 
-        return view($this->_config['view'])->with('locale', $locale);
+        $categories = Category::whereNull('parent_id')->where('status', 1)->get();
+
+        return view($this->_config['view'], compact('categories'))->with('locale', $locale);
     }
 
     /**
@@ -100,7 +107,13 @@ class CategoryController extends Controller
     {
         $categories = $this->blogCategoryRepository->findOrFail($id);
 
-        return view($this->_config['view'], compact('categories'));
+        Session::put('bCatEditId', $id);
+
+        $categories_data = Category::whereNull('parent_id')->where('status', 1)->where('id', '!=', $id)->get();
+        
+        Session::remove('bCatEditId');
+
+        return view($this->_config['view'], compact('categories', 'categories_data'));
     }
 
     /**
@@ -124,7 +137,7 @@ class CategoryController extends Controller
             $data['locale'] = implode(',', $data['locale']);
         }
 
-        if (is_null(request()->image)) {
+        if (is_array($data) && array_key_exists('image', $data) && is_null(request()->image)) {
             session()->flash('error', trans('blog::app.category.updated-fault'));
 
             return redirect()->back();

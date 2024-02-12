@@ -46,37 +46,12 @@ class TagDataGrid extends DataGrid
         'locales',
     ];
 
-    /**
-     * Create datagrid instance.
-     *
-     * @return void
-     */
-    // public function __construct()
-    // {
-    //     parent::__construct();
-
-    //     /* locale */
-    //     $this->locale = core()->getRequestedLocaleCode();
-
-    //     /* channel */
-    //     $this->channel = core()->getRequestedChannelCode();
-
-    //     /* finding channel code */
-    //     if ($this->channel !== 'all') {
-    //         $this->channel = Channel::where('code', $this->channel)->first();
-
-    //         $this->channel = $this->channel ? $this->channel->code : 'all';
-    //     }
-    // }
-
     public function prepareQueryBuilder()
     {
         $queryBuilder = DB::table('blog_tags')->select('id')
             ->addSelect('id', 'name', 'slug', 'description', 'status', 'meta_title', 'meta_description', 'meta_keywords');;
 
         return $queryBuilder;
-
-        // $this->setQueryBuilder($queryBuilder);
     }
 
     public function prepareColumns()
@@ -102,7 +77,7 @@ class TagDataGrid extends DataGrid
         $this->addColumn([
             'index'      => 'status',
             'label'      => trans('blog::app.datagrid.status'),
-            'type'       => 'string',
+            'type'       => 'boolean',
             'searchable' => true,
             'sortable'   => true,
             'filterable' => true,
@@ -118,36 +93,42 @@ class TagDataGrid extends DataGrid
 
     public function prepareActions()
     {
-        $this->addAction([
-            'title' => 'edit',
-            'method' => 'GET',
-            'route' => 'admin.blog.tag.edit',
-            'icon' => 'icon-edit',
-            'url'    => function ($row) {
-                return route('admin.blog.tag.edit', $row->id);
-            },
-        ]);
+        if (bouncer()->hasPermission('blog.tag.edit')) {
+            $this->addAction([
+                'title' => 'edit',
+                'method' => 'GET',
+                'route' => 'admin.blog.tag.edit',
+                'icon' => 'icon-edit',
+                'url'    => function ($row) {
+                    return route('admin.blog.tag.edit', $row->id);
+                },
+            ]);
+        }
 
-        $this->addAction([
-            'title' => 'delete',
-            'method' => 'POST',
-            'route' => 'admin.blog.tag.delete',
-            'icon' => 'icon-delete',
-            'url'    => function ($row) {
-                return route('admin.blog.tag.delete', $row->id);
-            },
-        ]);
+        if (bouncer()->hasPermission('blog.tag.delete')) {
+            $this->addAction([
+                'title' => 'delete',
+                'method' => 'POST',
+                'route' => 'admin.blog.tag.delete',
+                'icon' => 'icon-delete',
+                'url'    => function ($row) {
+                    return route('admin.blog.tag.delete', $row->id);
+                },
+            ]);
+        }
     }
 
     public function prepareMassActions()
     {
-        $this->addMassAction([
-            'type'   => 'delete',
-            'label'  => trans('admin::app.datagrid.delete'),
-            'title'  => 'Delete',
-            'action' => route('admin.blog.tag.massdelete'),
-            'url' => route('admin.blog.tag.massdelete'),
-            'method' => 'POST',
-        ]);
+        if (bouncer()->hasPermission('blog.tag.delete')) {
+            $this->addMassAction([
+                'type'   => 'delete',
+                'label'  => trans('admin::app.datagrid.delete'),
+                'title'  => 'Delete',
+                'action' => route('admin.blog.tag.massdelete'),
+                'url' => route('admin.blog.tag.massdelete'),
+                'method' => 'POST',
+            ]);
+        }
     }
 }

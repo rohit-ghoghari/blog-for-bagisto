@@ -3,6 +3,18 @@
         @lang('blog::app.blog.add-title')
     </x-slot:title>
 
+    @pushOnce('styles')
+
+        <style type="text/css">
+            
+            .v-tree-container>.v-tree-item:not(.has-children) {
+                padding-left: 18px !important;
+            }
+            
+        </style>
+
+    @endPushOnce
+
     @php
         $currentLocale = core()->getRequestedLocale();
     @endphp
@@ -16,18 +28,18 @@
 
         {!! view_render_event('admin.blogs.create.before') !!}
 
-        <div class="flex gap-4 justify-between items-center max-sm:flex-wrap">
-            <p class="text-xl text-gray-800 dark:text-white font-bold">
+        <div class="flex gap-[16px] justify-between items-center max-sm:flex-wrap">
+            <p class="text-[20px] text-gray-800 dark:text-white font-bold">
                 @lang('blog::app.blog.add-title')
             </p>
 
-            <div class="flex gap-x-2.5 items-center">
-                <!-- Back Button -->
+            <div class="flex gap-x-[10px] items-center">
+                <!-- Cancel Button -->
                 <a
                     href="{{ route('admin.blog.index') }}"
-                    class="transparent-button hover:bg-gray-200 dark:hover:bg-gray-800 dark:text-white"
+                    class="transparent-button hover:bg-gray-200 dark:hover:bg-gray-800 dark:text-white "
                 >
-                    @lang('admin::app.catalog.categories.edit.back-btn')
+                    @lang('admin::app.catalog.categories.create.back-btn')
                 </a>
 
                 <!-- Save Button -->
@@ -40,52 +52,15 @@
             </div>
         </div>
 
-        <!-- Filter Row -->
-        <div class="flex  gap-4 justify-between items-center mt-7 max-md:flex-wrap">
-            <div class="flex gap-x-1 items-center">
-                <!-- Locale Switcher -->
-
-                <x-admin::dropdown :class="core()->getAllLocales()->count() <= 1 ? 'hidden' : ''">
-                    <!-- Dropdown Toggler -->
-                    <x-slot:toggle>
-                        <button
-                            type="button"
-                            class="transparent-button px-1 py-1.5 hover:bg-gray-200 dark:hover:bg-gray-800 focus:bg-gray-200 dark:focus:bg-gray-800 dark:text-white"
-                        >
-                            <span class="icon-language text-2xl"></span>
-
-                            {{ $currentLocale->name }}
-
-                            <input type="hidden" name="locale" value="{{ $currentLocale->code }}"/>
-
-                            <span class="icon-sort-down text-2xl"></span>
-                        </button>
-                    </x-slot:toggle>
-
-                    <!-- Dropdown Content -->
-                    <x-slot:content class="!p-0">
-                        @foreach (core()->getAllLocales() as $locale)
-                            <a
-                                href="?{{ Arr::query(['locale' => $locale->code]) }}"
-                                class="flex gap-2.5 px-5 py-2 text-base cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-950 dark:text-white {{ $locale->code == $currentLocale->code ? 'bg-gray-100 dark:bg-gray-950' : ''}}"
-                            >
-                                {{ $locale->name }}
-                            </a>
-                        @endforeach
-                    </x-slot:content>
-                </x-admin::dropdown>
-            </div>
-        </div>
-
         <!-- Full Pannel -->
-        <div class="flex gap-2.5 mt-3.5 max-xl:flex-wrap">
+        <div class="flex gap-[10px] mt-[14px] max-xl:flex-wrap">
 
             <!-- Left Section -->
-            <div class="flex flex-col gap-2 flex-1 max-xl:flex-auto">
+            <div class="flex flex-col gap-[8px] flex-1 max-xl:flex-auto">
 
                 <!-- General -->
-                <div class="p-4 bg-white dark:bg-gray-900 rounded box-shadow">
-                    <p class="mb-4 text-base text-gray-800 dark:text-white font-semibold">
+                <div class="p-[16px] bg-white dark:bg-gray-900 rounded-[4px] box-shadow">
+                    <p class="mb-[16px] text-[16px] text-gray-800 dark:text-white font-semibold">
                         @lang('admin::app.catalog.categories.create.general')
                     </p>
 
@@ -172,8 +147,8 @@
                 </div>
 
                 <!-- Description and images -->
-                <div class="p-4 bg-white dark:bg-gray-900 rounded box-shadow">
-                    <p class="mb-4 text-base text-gray-800 dark:text-white font-semibold">
+                <div class="p-[16px] bg-white dark:bg-gray-900 rounded-[4px] box-shadow">
+                    <p class="mb-[16px] text-[16px] text-gray-800 dark:text-white font-semibold">
                         @lang('blog::app.blog.description-and-images')
                     </p>
 
@@ -232,11 +207,7 @@
                                 @lang('blog::app.blog.image')
                             </p>
 
-                            <p class="text-xs text-gray-500">
-                                @lang('admin::app.catalog.categories.create.logo-size')
-                            </p>
-
-                            <x-admin::media.images name="src" rules="required"></x-admin::media.images>
+                            <x-admin::media.images name="src"></x-admin::media.images>
 
                             <x-admin::form.control-group.error control-name="src"></x-admin::form.control-group.error>
 
@@ -246,13 +217,14 @@
                 </div>
 
                 <!-- SEO Deatils -->
-                <div class="p-4 bg-white dark:bg-gray-900 rounded box-shadow">
-                    <p class="text-base text-gray-800 dark:text-white font-semibold mb-4">
+                <div class="p-[16px] bg-white dark:bg-gray-900 rounded-[4px] box-shadow">
+                    <p class="mb-[16px] text-[16px] text-gray-800 dark:text-white font-semibold">
                         @lang('blog::app.blog.search_engine_optimization')
                     </p>
 
                     <!-- SEO Title & Description Blade Componnet -->
-                    <x-admin::seo/>
+                    {{-- <x-admin::seo/> --}}
+                    <v-seo-helper-custom></v-seo-helper-custom>
 
                     <div class="mt-8">
                         <!-- Meta Title -->
@@ -322,12 +294,12 @@
             </div>
 
             <!-- Right Section -->
-            <div class="flex flex-col gap-2 w-[360px] max-w-full">
+            <div class="flex flex-col gap-[8px] w-[360px] max-w-full">
                 <!-- Settings -->
 
                 <x-admin::accordion>
                     <x-slot:header>
-                        <p class="p-2.5 text-gray-600 dark:text-gray-300 text-base font-semibold">
+                        <p class="p-[10px] text-gray-600 dark:text-gray-300 text-[16px] font-semibold">
                             @lang('admin::app.catalog.categories.create.settings')
                         </p>
                     </x-slot:header>
@@ -345,7 +317,7 @@
                                 name="published_at" 
                                 id="published_at"
                                 rules="required"
-                                :value="old('published_at')"
+                                :value="old('published_at') ?? date('Y-m-d')"
                                 :label="trans('blog::app.blog.published_at')"
                                 :placeholder="trans('blog::app.blog.published_at')"
                             >
@@ -390,42 +362,66 @@
                         </x-admin::form.control-group>
 
                         <!-- Auther -->
+                        @php
+
+                        $loggedIn_user = auth()->guard('admin')->user()->toarray();
+                        $user_id = ( array_key_exists('id', $loggedIn_user) ) ? $loggedIn_user['id'] : 0;
+                        $user_name = ( array_key_exists('name', $loggedIn_user) ) ? $loggedIn_user['name'] : '';
+                        $role = ( array_key_exists('role', $loggedIn_user) ) ? ( array_key_exists('name', $loggedIn_user['role']) ? $loggedIn_user['role']['name'] : 'Administrator' ) : 'Administrator';
+
+                        @endphp
+
                         <x-admin::form.control-group class="mb-2.5">
                             <x-admin::form.control-group.label class="required text-gray-800 dark:text-white font-medium required">
                                 @lang('blog::app.blog.author')
                             </x-admin::form.control-group.label>
 
-                            <x-admin::form.control-group.control
-                                type="select"
-                                name="author"
-                                id="author"
-                                {{-- class="cursor-pointer" --}}
-                                rules="required"
-                                :value="old('author')"
-                                :label="trans('blog::app.blog.author')"
-                                {{-- :placeholder="trans('blog::app.blog.author')" --}}
-                            >
-                                <!-- Options -->
-                                <option value="">Select an author</option>
-                                @foreach($users as $user)
-                                    <option value="{{$user->name}}">{{$user->name}}</option>
-                                @endforeach
-                            </x-admin::form.control-group.control>
+                            @if( $role != 'Administrator' )
+                                <input type="hidden" name="author_id" id="author_id" value="{{$user_id}}">
+                                <x-admin::form.control-group.control
+                                    type="text"
+                                    name="author"
+                                    rules="required"
+                                    disabled="disabled"
+                                    :value="$user_name"
+                                    :label="trans('blog::app.blog.author')"
+                                    :placeholder="trans('blog::app.blog.author')"
+                                >
+                                </x-admin::form.control-group.control>
+                            @else
+                                <x-admin::form.control-group.control
+                                    type="select"
+                                    name="author_id"
+                                    id="author_id"
+                                    {{-- class="cursor-pointer" --}}
+                                    rules="required"
+                                    :value="old('author_id') ?? $user_id"
+                                    :label="trans('blog::app.blog.author')"
+                                    {{-- :placeholder="trans('blog::app.blog.author')" --}}
+                                >
+                                    <!-- Options -->
+                                    <option value="">Select an author</option>
+                                    @foreach($users as $user)
+                                        <option value="{{$user->id}}">{{$user->name}}</option>
+                                    @endforeach
+                                </x-admin::form.control-group.control>
 
-                            <x-admin::form.control-group.error
-                                control-name="author"
-                            >
-                            </x-admin::form.control-group.error>
+                                <x-admin::form.control-group.error
+                                    control-name="author"
+                                >
+                                </x-admin::form.control-group.error>
+                            @endif
                         </x-admin::form.control-group>
 
                     </x-slot:content>
                 </x-admin::accordion>
 
-                <!-- Categories & Tags -->
+                <!-- Default Categories -->
                 <x-admin::accordion>
                     <x-slot:header>
-                        <p class="required text-gray-600 dark:text-gray-300 text-base p-2.5 font-semibold">
-                            @lang('blog::app.blog.categories_title')
+                        <p class="required p-[10px] text-gray-600 dark:text-gray-300 text-[16px] font-semibold">
+                            {{-- @lang('blog::app.blog.categories_title') --}}
+                            Default Category
                         </p>
                     </x-slot:header>
 
@@ -449,7 +445,7 @@
                                 <!-- Options -->
                                 <option value="">Select an category</option>
                                 @foreach($categories as $category)
-                                    <option value="{{$category->id}}">{{$category->name}}</option>
+                                    <option value="{{$category->id}}" data-slug="{{$category->slug}}" id="{{'default_category'.$category->id}}" >{{$category->name}}</option>
                                 @endforeach
                             </x-admin::form.control-group.control>
 
@@ -462,10 +458,38 @@
                     </x-slot:content>
                 </x-admin::accordion>
 
+                <!-- Additional Categories -->
+                <x-admin::accordion>
+                    <x-slot:header>
+                        <p class="p-[10px] text-gray-600 dark:text-gray-300 text-[16px] font-semibold">
+                            {{-- @lang('blog::app.blog.categories_title') --}}
+                            Additional Category
+                        </p>
+                    </x-slot:header>
+
+                    <x-slot:content>
+
+                        <!-- Status -->
+                        <div class="flex flex-col gap-[12px]">
+                            <x-admin::tree.view
+                                input-type="checkbox"
+                                name-field="categorys"
+                                id-field="id"
+                                value-field="id"
+                                :items="json_encode($additional_categories)"
+                                behavior="no"
+                                :fallback-locale="config('app.fallback_locale')"
+                            >
+                            </x-admin::tree.view>
+                        </div>
+
+                    </x-slot:content>
+                </x-admin::accordion>
+
                 <!-- Tags -->
                 <x-admin::accordion>
                     <x-slot:header>
-                        <p class="required text-gray-600 dark:text-gray-300 text-base p-2.5 font-semibold">
+                        <p class="required p-[10px] text-gray-600 dark:text-gray-300 text-[16px] font-semibold">
                             @lang('blog::app.blog.tag_title')
                         </p>
                     </x-slot:header>
@@ -506,5 +530,105 @@
         </div>
 
     </x-admin::form>
+
+@pushOnce('scripts')
+    {{-- SEO Vue Component Template --}}
+    <script type="text/x-template" id="v-seo-helper-custom-template">
+        <div class="flex flex-col gap-[3px] mb-[30px]">
+            <p 
+                class="text-[#161B9D] dark:text-white"
+                v-text="metaTitle"
+            >
+            </p>
+
+            <p 
+                class="text-[#161B9D] dark:text-white"
+                style="display: none;"
+                v-text="metaSlug"
+            >
+            </p>
+
+            <p 
+                class="text-[#161B9D] dark:text-white"
+                style="display: none;"
+                v-text="metaSlugCategory"
+            >
+            </p>
+
+            <!-- SEO Meta Title -->
+            <p 
+                class="text-[#135F29]"
+                v-text="'{{ URL::to('/') }}/blog' + ( ( metaSlugCategory != '' && metaSlugCategory != null && metaSlugCategory != undefined ) ? '/'+metaSlugCategory : '' ) + '/' + (metaSlug ? metaSlug.toLowerCase().replace(/\s+/g, '-') : '')"
+            >
+            </p>
+
+            <!-- SEP Meta Description -->
+            <p 
+                class="text-gray-600 dark:text-gray-300"
+                v-text="metaDescription"
+            >
+            </p>
+        </div>
+    </script>
+
+    <script type="module">
+        app.component('v-seo-helper-custom', {
+            template: '#v-seo-helper-custom-template',
+
+            data() {
+                return {
+                    metaTitle: this.$parent.getValues()['meta_title'],
+
+                    metaDescription: this.$parent.getValues()['meta_description'],
+
+                    metaSlug: this.$parent.getValues()['slug'],
+
+                    metaSlugCategory: this.$parent.getValues()['default_category'],
+                }
+            },
+
+            mounted() {
+                let self = this;
+
+                self.metaTitle = document.getElementById('meta_title').value;
+
+                self.metaDescription = document.getElementById('meta_description').value;
+
+                self.metaSlug = document.getElementById('slug').value;
+
+                var d_cat_id = document.getElementById('default_category').value;
+
+                var d_cat_slug = document.getElementById('default_category' + d_cat_id).getAttribute("data-slug");
+
+                self.metaSlugCategory = ( d_cat_slug != '' && d_cat_slug != null && d_cat_slug != undefined ) ? d_cat_slug : '';
+
+                document.getElementById('meta_title').addEventListener('input', function(e) {
+                    self.metaTitle = e.target.value;
+                });
+
+                document.getElementById('meta_description').addEventListener('input', function(e) {
+                    self.metaDescription = e.target.value;
+                });
+
+                document.getElementById('name').addEventListener('input', function(e) {
+                    setTimeout(function(){
+                        var slug = document.getElementById('slug').value;
+                        self.metaSlug = ( slug != '' && slug != null && slug != undefined ) ? slug : '';
+                    }, 1000);
+                });
+
+                document.getElementById('slug').addEventListener('input', function(e) {
+                    var slug = e.target.value;
+                    self.metaSlug = ( slug != '' && slug != null && slug != undefined ) ? slug : '';
+                });
+
+                document.getElementById('default_category').addEventListener('change', function(e) {
+                    var cat_slug = document.getElementById('default_category' + e.target.value).getAttribute("data-slug");
+                    self.metaSlugCategory = ( cat_slug != '' && cat_slug != null && cat_slug != undefined ) ? cat_slug : '';
+                });
+            },
+        });
+    </script>
+@endPushOnce
 
 </x-admin::layouts>

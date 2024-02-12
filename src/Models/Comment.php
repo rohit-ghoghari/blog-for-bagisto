@@ -15,8 +15,10 @@ class Comment extends Model implements CommentContract
     protected $fillable = [
         'post',
         'author',
+        'name',
         'email',
         'comment',
+        'parent_id',
         'status'
     ];
 
