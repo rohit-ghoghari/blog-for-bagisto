@@ -5,6 +5,7 @@ use Webbycrown\BlogBagisto\Http\Controllers\Admin\BlogController;
 use Webbycrown\BlogBagisto\Http\Controllers\Admin\CategoryController;
 use Webbycrown\BlogBagisto\Http\Controllers\Admin\TagController;
 use Webbycrown\BlogBagisto\Http\Controllers\Admin\CommentController;
+use Webbycrown\BlogBagisto\Http\Controllers\Admin\SettingController;
 
 Route::group(['middleware' => ['web', 'admin'], 'prefix' => config('app.admin_url')], function () {
 
@@ -107,6 +108,18 @@ Route::group(['middleware' => ['web', 'admin'], 'prefix' => config('app.admin_ur
     Route::post('blog/comment/delete/{id}', [CommentController::class, 'destroy'])->name('admin.blog.comment.delete');
 
     Route::post('blog/comment/massdelete', [CommentController::class, 'massDestroy'])->name('admin.blog.comment.massdelete');
+
+    /**
+     * Admin blog setting routes
+     */
+    Route::get('blog/setting', [SettingController::class, 'index'])->defaults('_config', [
+        'view' => 'blog::admin.setting.index',
+    ])->name('admin.blog.setting.index');
+
+    Route::post('blog/setting/store', [SettingController::class, 'store'])->defaults('_config', [
+        'redirect' => 'admin.blog.setting.index',
+    ])->name('admin.blog.setting.store');
+
 });
 
 /**

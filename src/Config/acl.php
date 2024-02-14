@@ -70,7 +70,7 @@ return [
         'key'   => 'blog.comment',
         'name'  => 'Comment',
         'route' => 'admin.blog.comment.index',
-        'sort'  => 3,
+        'sort'  => 4,
     ], [
         'key'   => 'blog.comment.edit',
         'name'  => 'Edit',
@@ -81,6 +81,11 @@ return [
         'name'  => 'Delete',
         'route' => 'admin.blog.comment.delete',
         'sort'  => 2,
+    ], [
+        'key'   => 'blog.setting',
+        'name'  => 'Setting',
+        'route' => 'admin.blog.setting.index',
+        'sort'  => 5,
     ]
 
 ];

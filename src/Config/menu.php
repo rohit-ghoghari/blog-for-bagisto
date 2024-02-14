@@ -36,6 +36,12 @@ return [
         'route'      => 'admin.blog.comment.index',
         'sort'       => 4,
         'icon'       => '',
+    ], [
+        'key'        => 'blog.setting',
+        'name'       => 'Setting',
+        'route'      => 'admin.blog.setting.index',
+        'sort'       => 5,
+        'icon'       => '',
     ],
 
 ];

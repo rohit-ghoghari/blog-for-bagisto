@@ -5,11 +5,11 @@
 
 {{-- SEO Meta Content --}}
 @push ('meta')
-    <meta name="title" content="{{ ( isset( $blog->meta_title ) && !empty( $blog->meta_title ) && !is_null( $blog->meta_title ) ) ? $blog->meta_title : ( $channel->home_seo['meta_title'] ?? '' ) }}" />
+    <meta name="title" content="{{ $blog->meta_title ?? ( $blog_seo_meta_title ?? ( $channel->home_seo['meta_title'] ?? '' ) ) }}" />
 
-    <meta name="description" content="{{ ( isset( $blog->meta_description ) && !empty( $blog->meta_description ) && !is_null( $blog->meta_description ) ) ? $blog->meta_description : ( $channel->home_seo['meta_description'] ?? '' ) }}" />
+    <meta name="description" content="{{ $blog->meta_description ?? ( $blog_seo_meta_keywords ?? ( $channel->home_seo['meta_description'] ?? '' ) ) }}" />
 
-    <meta name="keywords" content="{{ ( isset( $blog->meta_keywords ) && !empty( $blog->meta_keywords ) && !is_null( $blog->meta_keywords ) ) ? $blog->meta_keywords : ( $channel->home_seo['meta_keywords'] ?? '' ) }}" />
+    <meta name="keywords" content="{{ $blog->meta_keywords ?? ( $blog_seo_meta_description ?? ( $channel->home_seo['meta_keywords'] ?? '' ) ) }}" />
 @endPush
 
 <x-shop::layouts>
@@ -70,7 +70,10 @@
                                                 <ul class="list-group">
                                                     @foreach($categories as $category)
                                                         <li><a href="{{route('shop.blog.category.index',[$category->slug])}}" class="list-group-item list-group-item-action">
-                                                                <span>{{ $category->name }}</span> <span class="badge badge-pill badge-primary">{{ $category->assign_blogs }}</span>
+                                                                <span>{{ $category->name }}</span> 
+                                                                @if( (int)$show_categories_count == 1 )
+                                                                    <span class="badge badge-pill badge-primary">{{ $category->assign_blogs }}</span>
+                                                                @endif
                                                         </a></li>
                                                     @endforeach
                                                 </ul>
@@ -79,7 +82,11 @@
                                                     <h3>Tags</h3> 
                                                     <div class="tag-list">
                                                         @foreach($tags as $tag)
-                                                            <a href="{{route('shop.blog.tag.index',[$tag->slug])}}" role="button" class="btn btn-primary btn-lg">{{ $tag->name }} <span class="badge badge-light">{{ $tag->count }}</span></a> 
+                                                            <a href="{{route('shop.blog.tag.index',[$tag->slug])}}" role="button" class="btn btn-primary btn-lg">{{ $tag->name }} 
+                                                                @if( (int)$show_tags_count == 1 )
+                                                                    <span class="badge badge-light">{{ $tag->count }}</span>
+                                                                @endif
+                                                            </a> 
                                                         @endforeach
                                                     </div>
                                                 </div>
@@ -108,9 +115,24 @@
                                                         <div class="post-meta">
                                                             <p>
                                                                 {{\Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $related_blog->created_at)->format('M j, Y') }} by
-                                                                <a href="#">{{ $related_blog->author }}</a>
+                                                                @if( (int)$show_author_page == 1 )
+                                                                    <a href="{{route('shop.blog.author.index',[$related_blog->author_id])}}">{{ $related_blog->author }}</a>
+                                                                @else
+                                                                    <a>{{ $blog->author }}</a>
+                                                                @endif
                                                             </p>
                                                         </div>
+
+                                                        @if( !empty($related_blog->assign_categorys) && count($related_blog->assign_categorys) > 0 )
+                                                            <div class="post-categories">
+                                                                <p>
+                                                                    @foreach($related_blog->assign_categorys as $assign_category)
+                                                                        <a href="{{route('shop.blog.category.index',[$assign_category->slug])}}" class="cat-link">{{$assign_category->name}}</a>
+                                                                    @endforeach
+                                                                </p>
+                                                            </div>
+                                                        @endif
+
                                                         <div class="card-text text-justify">
                                                             {!! $related_blog->short_description !!}
                                                         </div>
@@ -127,66 +149,98 @@
                                 
                             </div>
 
-                            <div id="comment-list" class="column-12 comment-part">
-                                <div class="row flex flex-wrap grid-wrap">
-                                    <div class="column-12">
-                                        @if( (int)$blog->allow_comments == 1 )
-                                            <h2>Comments ({{ $total_comments_cnt }})</h2> 
-                                            <div class="row flex flex-wrap grid-wrap">
-                                                <div class="column-12">
-                                                    <div class="row justify-content-center mt-3 comment-form-holder flex flex-wrap grid-wrap">
+                            @if( (int)$enable_comment == 1 )
+
+                                <div id="comment-list" class="column-12 comment-part">
+                                    <div class="row flex flex-wrap grid-wrap">
+                                        <div class="column-12">
+                                            @if( (int)$blog->allow_comments == 1 )
+                                                <h2>Comments ({{ $total_comments_cnt }})</h2> 
+                                                <div class="row flex flex-wrap grid-wrap">
+
+                                                    @php
+
+                                                        $guest_comment_flag = false;
+                                                        if ( $loggedIn_user ) {
+                                                            $guest_comment_flag = true;
+                                                        } else {
+                                                            if ( (int)$allow_guest_comment == 1 ) {
+                                                                $guest_comment_flag = true;
+                                                            }
+                                                        }
+
+                                                    @endphp
+
+                                                    @if( $guest_comment_flag )
+
                                                         <div class="column-12">
-                                                            <h3>Leave a comment</h3> 
-                                                            <form method="POST" action="{{route('shop.blog.comment.store')}}" class="frmComment comment-form">
-                                                                @csrf
-                                                                <input type="hidden" name="parent_id" value="0">
-                                                                <input type="hidden" name="post" value="{{ $blog->id }}">
-                                                                <div class="form-row">
-                                                                    <div class="form-group column-6">
-                                                                        <div class="input-group">
-                                                                            <div class="input-group-prepend">
-                                                                                <span class="input-group-text"><i class="fa fa-user"> </i></span>
-                                                                            </div> 
-                                                                            <input type="text" name="name" placeholder="Your Name" required="required" class="form-control">
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="form-group column-6">
-                                                                        <div class="input-group">
-                                                                            <div class="input-group-prepend">
-                                                                                <span class="input-group-text"><i class="fa fa-envelope"></i></span>
+                                                            <div class="row justify-content-center mt-3 comment-form-holder flex flex-wrap grid-wrap">
+                                                                <div class="column-12">
+                                                                    <h3>Leave a comment</h3> 
+                                                                    <form method="POST" action="{{route('shop.blog.comment.store')}}" class="frmComment comment-form">
+                                                                        @csrf
+                                                                        <input type="hidden" name="parent_id" value="0">
+                                                                        <input type="hidden" name="post" value="{{ $blog->id }}">
+                                                                        <div class="form-row">
+                                                                            <div class="form-group column-6">
+                                                                                <div class="input-group">
+                                                                                    <div class="input-group-prepend">
+                                                                                        <span class="input-group-text"><i class="fa fa-user"> </i></span>
+                                                                                    </div> 
+                                                                                    <input type="text" name="name" placeholder="Your Name" required="required" class="form-control" value="{{ ( isset($loggedIn_user_name) && !empty($loggedIn_user_name) && !is_null($loggedIn_user_name) ) ? $loggedIn_user_name : ''; }}">
+                                                                                </div>
                                                                             </div>
-                                                                            <input type="email" name="email" placeholder="Your Email" required="required" class="form-control">
+                                                                            <div class="form-group column-6">
+                                                                                <div class="input-group">
+                                                                                    <div class="input-group-prepend">
+                                                                                        <span class="input-group-text"><i class="fa fa-envelope"></i></span>
+                                                                                    </div>
+                                                                                    <input type="email" name="email" placeholder="Your Email" required="required" class="form-control" value="{{ ( isset($loggedIn_user_email) && !empty($loggedIn_user_email) && !is_null($loggedIn_user_email) ) ? $loggedIn_user_email : ''; }}">
+                                                                                </div>
+                                                                            </div>
                                                                         </div>
-                                                                    </div>
+                                                                        <div class="form-group">
+                                                                            <textarea name="comment" placeholder="Your Comment" required="required" rows="5" class="form-control"></textarea>
+                                                                        </div>
+                                                                        <div class="form-group text-right">
+                                                                            <button type="submit" class="btn btn-primary btn-lg">Comment</button>
+                                                                        </div>
+                                                                    </form>
                                                                 </div>
-                                                                <div class="form-group">
-                                                                    <textarea name="comment" placeholder="Your Comment" required="required" rows="5" class="form-control"></textarea>
-                                                                </div>
-                                                                <div class="form-group text-right">
-                                                                    <button type="submit" class="btn btn-primary btn-lg">Comment</button>
-                                                                </div>
-                                                            </form>
+                                                            </div>
                                                         </div>
-                                                    </div>
+
+                                                    @else
+
+                                                        <div class="column-12">
+                                                            <div class="comment-not-allow-guest">
+                                                                You must be logged in to comment. Clik <a href="{{ URL::to('/') }}/customer/login" target="_blank"> here</a> to login.
+                                                            </div>
+                                                        </div>
+
+                                                    @endif
+
+                                                    @if( !empty( $comments ) && count( $comments ) > 0 )
+
+                                                        @php $nested_comment_index = 0;  @endphp
+
+                                                        <div class="column-12">
+
+                                                            @include ('blog::shop.comment.list', ['comment_data' => $comments])
+
+                                                        </div>
+                                                        
+                                                    @endif
+
                                                 </div>
-
-                                                @if( !empty( $comments ) && count( $comments ) > 0 )
-
-                                                    <div class="column-12">
-
-                                                        @include ('blog::shop.comment.list', ['comment_data' => $comments])
-
-                                                    </div>
-                                                    
-                                                @endif
-
-                                            </div>
-                                        @else
-                                            <div class="comment-not-allow">Comments are turned off.</div>
-                                        @endif
+                                            @else
+                                                <div class="comment-not-allow">Comments are turned off.</div>
+                                            @endif
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+
+                            @endif
 
                         </div>
                     </div>

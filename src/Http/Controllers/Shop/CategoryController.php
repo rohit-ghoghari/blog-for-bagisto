@@ -8,6 +8,7 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Webbycrown\BlogBagisto\Models\Blog;
 use Webbycrown\BlogBagisto\Models\Category;
 use Webbycrown\BlogBagisto\Models\Tag;
+use Webkul\Core\Models\CoreConfig;
 use Webkul\Shop\Repositories\ThemeCustomizationRepository;
 use Illuminate\Support\Facades\DB;
 
@@ -48,28 +49,35 @@ class CategoryController extends Controller
 
         $category_id = ( $category && isset($category->id) ) ? $category->id : 0;
 
-        // $blogs = Blog::where('status', 1)->where('default_category', $category_id)->orWhereRaw('FIND_IN_SET(?, categorys)', [$category_id])
+        $paginate = app('Webbycrown\BlogBagisto\Http\Controllers\Shop\BlogController')->getConfigByKey('blog_post_per_page');
+        $paginate = ( isset($paginate) && !empty($paginate) && is_null($paginate) ) ? (int)$paginate : 9;
 
-        $blogs = Blog::where('status', 1)
+        $blogs = Blog::orderBy('id', 'desc')->where('status', 1)
         ->where(
             function ($query) use ($category_id) {
                 $query->where('default_category', $category_id)
                 ->orWhereRaw('FIND_IN_SET(?, categorys)', [$category_id]);
             })
-        ->paginate(9);
-
-        $categories = Blog::groupBy('default_category')->selectRaw('default_category')->selectRaw('count(*) as count')->get();
+        ->paginate($paginate);
 
         $categories = Category::where('status', 1)->get();
 
-        $tags = app('Webbycrown\BlogBagisto\Http\Controllers\Shop\BlogController')->gelTagsWithCount();
+        $tags = app('Webbycrown\BlogBagisto\Http\Controllers\Shop\BlogController')->getTagsWithCount();
 
         $customizations = $this->themeCustomizationRepository->orderBy('sort_order')->findWhere([
             'status'     => self::STATUS,
             'channel_id' => core()->getCurrentChannel()->id
         ]);
 
-        return view($this->_config['view'], compact('blogs', 'categories', 'customizations', 'category', 'tags'));
+        $show_categories_count = app('Webbycrown\BlogBagisto\Http\Controllers\Shop\BlogController')->getConfigByKey('blog_post_show_categories_with_count');
+        $show_tags_count = app('Webbycrown\BlogBagisto\Http\Controllers\Shop\BlogController')->getConfigByKey('blog_post_show_tags_with_count');
+        $show_author_page = app('Webbycrown\BlogBagisto\Http\Controllers\Shop\BlogController')->getConfigByKey('blog_post_show_author_page');
+
+        $blog_seo_meta_title = app('Webbycrown\BlogBagisto\Http\Controllers\Shop\BlogController')->getConfigByKey('blog_seo_meta_title');
+        $blog_seo_meta_keywords = app('Webbycrown\BlogBagisto\Http\Controllers\Shop\BlogController')->getConfigByKey('blog_seo_meta_keywords');
+        $blog_seo_meta_description = app('Webbycrown\BlogBagisto\Http\Controllers\Shop\BlogController')->getConfigByKey('blog_seo_meta_description');
+
+        return view($this->_config['view'], compact('blogs', 'categories', 'customizations', 'category', 'tags', 'show_categories_count', 'show_tags_count', 'show_author_page', 'blog_seo_meta_title', 'blog_seo_meta_keywords', 'blog_seo_meta_description'));
     }
     
 }

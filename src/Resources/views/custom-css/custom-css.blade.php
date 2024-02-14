@@ -567,6 +567,22 @@
         border: 1px solid transparent;
         border-radius: 10px;
     }
+    .comment-not-allow-guest{
+        text-align: center!important;
+        color: #0c5460;
+        background-color: #d1ecf1;
+        border-color: #bee5eb;
+        position: relative;
+        padding: 0.75rem 1.25rem;
+        border: 1px solid transparent;
+        border-radius: 10px;
+        margin: 10px 0px 10px 0px;
+    }
+    .comment-not-allow-guest a{
+        color: #007bff;
+        text-decoration: none;
+        background-color: transparent;
+    }
 
     @media all and (max-width: 1180px){
         .blog-sidebar .categories {
@@ -707,6 +723,9 @@
 
     .blog-sidebar .categories .list-group li{
         border-top: 1px solid rgba(0,0,0,.125); 
+    }
+    .blog-sidebar .categories .list-group li a:hover{
+        background-color: rgba(0,0,0,.05); 
     }
     .blog-sidebar .categories .list-group li:first-child{
         border-top: 0;

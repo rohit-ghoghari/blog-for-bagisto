@@ -5,11 +5,11 @@
 
 {{-- SEO Meta Content --}}
 @push ('meta')
-    <meta name="title" content="{{ $channel->home_seo['meta_title'] ?? '' }}" />
+    <meta name="title" content="{{ $blog_seo_meta_title ?? ( $channel->home_seo['meta_title'] ?? '' ) }}" />
 
-    <meta name="description" content="{{ $channel->home_seo['meta_description'] ?? '' }}" />
+    <meta name="description" content="{{ $blog_seo_meta_keywords ?? ( $channel->home_seo['meta_description'] ?? '' ) }}" />
 
-    <meta name="keywords" content="{{ $channel->home_seo['meta_keywords'] ?? '' }}" />
+    <meta name="keywords" content="{{ $blog_seo_meta_description ?? ( $channel->home_seo['meta_keywords'] ?? '' ) }}" />
 @endPush
 
 <x-shop::layouts>
@@ -52,7 +52,11 @@
                                                                 <div class="post-meta">
                                                                     <p>
                                                                         {{\Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $blog->created_at)->format('M j, Y') }} by
-                                                                        <a href="{{route('shop.blog.author.index',[$blog->author_id])}}">{{ $blog->author }}</a>
+                                                                        @if( (int)$show_author_page == 1 )
+                                                                            <a href="{{route('shop.blog.author.index',[$blog->author_id])}}">{{ $blog->author }}</a>
+                                                                        @else
+                                                                            <a>{{ $blog->author }}</a>
+                                                                        @endif
                                                                     </p>
                                                                 </div>
                                                                 
@@ -92,7 +96,10 @@
                                                 <ul class="list-group">
                                                     @foreach($categories as $category)
                                                         <li><a href="{{route('shop.blog.category.index',[$category->slug])}}" class="list-group-item list-group-item-action">
-                                                                <span>{{ $category->name }}</span> <span class="badge badge-pill badge-primary">{{ $category->assign_blogs }}</span>
+                                                                <span>{{ $category->name }}</span> 
+                                                                @if( (int)$show_categories_count == 1 )
+                                                                    <span class="badge badge-pill badge-primary">{{ $category->assign_blogs }}</span>
+                                                                @endif
                                                         </a></li>
                                                     @endforeach
                                                 </ul>
@@ -101,7 +108,11 @@
                                                     <h3>Tags</h3> 
                                                     <div class="tag-list">
                                                         @foreach($tags as $tag)
-                                                            <a href="{{route('shop.blog.tag.index',[$tag->slug])}}" role="button" class="btn btn-primary btn-lg">{{ $tag->name }} <span class="badge badge-light">{{ $tag->count }}</span></a> 
+                                                            <a href="{{route('shop.blog.tag.index',[$tag->slug])}}" role="button" class="btn btn-primary btn-lg">{{ $tag->name }} 
+                                                                @if( (int)$show_tags_count == 1 )
+                                                                    <span class="badge badge-light">{{ $tag->count }}</span>
+                                                                @endif
+                                                            </a> 
                                                         @endforeach
                                                     </div>
                                                 </div>

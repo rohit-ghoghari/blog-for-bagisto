@@ -9,6 +9,7 @@ use Webbycrown\BlogBagisto\Models\Blog;
 use Webbycrown\BlogBagisto\Models\Category;
 use Webbycrown\BlogBagisto\Models\Tag;
 use Webbycrown\BlogBagisto\Models\Comment;
+use Webkul\Core\Models\CoreConfig;
 use Webbycrown\BlogBagisto\Repositories\BlogCommentRepository;
 use Webkul\Shop\Repositories\ThemeCustomizationRepository;
 use Illuminate\Support\Facades\DB;
