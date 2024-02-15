@@ -204,6 +204,18 @@
         text-decoration: underline;
     }
 
+    .post-not-available{
+        text-align: center!important;
+        color: #0c5460;
+        background-color: #d1ecf1;
+        border-color: #bee5eb;
+        position: relative;
+        padding: 0.75rem 1.25rem;
+        border: 1px solid transparent;
+        border-radius: 10px;
+        margin: 10px 0px 10px 0px;
+    }
+
     @media all and (max-width: 1180px){
         .blog-sidebar .categories {
             padding-left: 0px;
