@@ -21,8 +21,10 @@ return new class extends Migration
             $table->longText('description');
             $table->foreignId('channels');
             $table->foreignId('default_category');
-            $table->string('author');
+            $table->string('categorys')->nullable();
             $table->string('tags');
+            $table->string('author');
+            $table->foreignId('author_id')->default(0);
             $table->string('src');
             $table->string('locale');
             $table->boolean('status');
