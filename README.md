@@ -40,7 +40,7 @@ php artisan migrate
 php artisan storage:link
 ```
 ```
-php artisan optimize:cache
+php artisan optimize:clear
 ```
 ```
 php artisan vendor:publish --all
