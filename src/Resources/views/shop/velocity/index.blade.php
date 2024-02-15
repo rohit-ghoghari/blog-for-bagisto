@@ -37,7 +37,7 @@
 
                                     <div class="column-9">
 
-                                        @if( !empty($blogs) )
+                                        @if( !empty($blogs) &&  count($blogs) > 0 )
 
                                             <div class="flex flex-wrap blog-grid-list">
 
