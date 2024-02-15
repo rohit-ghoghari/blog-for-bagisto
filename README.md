@@ -45,3 +45,13 @@ php artisan optimize:clear
 ```
 php artisan vendor:publish --all
 ```
+
+- Now to use the admin side:
+```
+https://example.com/admin/blog
+```
+
+- Now to use the eCommerce side:
+```
+https://example.com/blog
+```
